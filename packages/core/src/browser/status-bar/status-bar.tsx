@@ -62,6 +62,7 @@ export const StatusBar = Symbol('StatusBar');
 
 export interface StatusBar {
     setBackgroundColor(color?: string): Promise<void>;
+    setForegroundColor(color?: string): Promise<void>;
     setElement(id: string, entry: StatusBarEntry): Promise<void>;
     removeElement(id: string): Promise<void>;
 }
@@ -70,6 +71,7 @@ export interface StatusBar {
 export class StatusBarImpl extends ReactWidget implements StatusBar {
 
     protected backgroundColor: string | undefined;
+    protected foregroundColor: string | undefined;
     protected entries: Map<string, StatusBarEntry> = new Map();
 
     constructor(
@@ -103,10 +105,22 @@ export class StatusBarImpl extends ReactWidget implements StatusBar {
         this.internalSetBackgroundColor(color);
     }
 
+    async setForegroundColor(color?: string): Promise<void> {
+        await this.ready;
+        this.internalSetForegroundColor(color);
+    }
+
     protected internalSetBackgroundColor(color?: string): void {
         this.backgroundColor = color;
         // tslint:disable-next-line:no-null-keyword
         this.node.style.backgroundColor = this.backgroundColor ? this.backgroundColor : null;
+    }
+
+    protected internalSetForegroundColor(color?: string): void {
+        this.foregroundColor = color;
+        this.entries.forEach(entry => {
+            entry.color = this.foregroundColor ? this.foregroundColor : undefined;
+        });
     }
 
     protected render(): JSX.Element {
